@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>科學偵探社：原子大風吹密室逃脫</title>
+    <title>科學偵探社：微觀原子大風吹</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,8 +13,8 @@
         }
         body {
             font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
-            background-color: #f0f4f8;
-            color: #2c3e50;
+            background-color: #f7fafc;
+            color: #2d3748;
             margin: 0;
             padding: 10px;
             min-height: 100vh;
@@ -24,7 +24,7 @@
         }
         header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             width: 100%;
             max-width: 1000px;
         }
@@ -33,14 +33,24 @@
             color: #1a365d;
             margin: 5px 0;
         }
+        .level-badge {
+            background-color: #ecc94b;
+            color: #744210;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
         .story-box {
             background-color: #fff;
             border-left: 5px solid #3182ce;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             font-size: 14px;
-            line-height: 1.5;
+            line-height: 1.6;
             margin-bottom: 15px;
             text-align: left;
         }
@@ -61,10 +71,12 @@
         }
         #left-panel {
             flex: 2;
-            min-width: 280px;
+            min-width: 300px;
         }
         #right-panel {
             flex: 3;
+            max-height: 65vh;
+            overflow-y: auto;
         }
         .panel-title {
             font-size: 16px;
@@ -85,41 +97,45 @@
         .atom-pool {
             display: flex;
             flex-wrap: wrap;
-            gap: 12px;
-            padding: 10px;
+            gap: 10px;
+            padding: 12px;
             background: #edf2f7;
             border-radius: 6px;
-            min-height: 120px;
+            min-height: 150px;
             align-content: flex-start;
-            position: relative;
         }
         .atom {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 15px;
             cursor: grab;
             box-shadow: 0 4px 6px rgba(0,0,0,0.15);
             position: relative;
-            z-index: 10;
             touch-action: none;
-            transition: transform 0.1s ease;
         }
         .atom:active {
             cursor: grabbing;
-            transform: scale(1.1);
         }
-        /* 原子顏色設定 */
-        .atom-Ca { background: radial-gradient(circle at 30% 30%, #ed8936, #dd6b20); } /* 鈣: 橘 */
-        .atom-C { background: radial-gradient(circle at 30% 30%, #4a5568, #2d3748); }  /* 碳: 灰黑 */
-        .atom-O { background: radial-gradient(circle at 30% 30%, #f56565, #e53e3e); }  /* 氧: 紅 */
-        .atom-H { background: radial-gradient(circle at 30% 30%, #4299e1, #3182ce); }  /* 氫: 藍 */
-        .atom-Cl { background: radial-gradient(circle at 30% 30%, #48bb78, #38a169); } /* 氯: 綠 */
+        
+        /* 魔王關原子縮小適應平板畫面 */
+        .boss-mode .atom {
+            width: 38px;
+            height: 38px;
+            font-size: 13px;
+        }
+
+        /* 原子3D視覺特效 */
+        .atom-C { background: radial-gradient(circle at 30% 30%, #4a5568, #1a202c); }  /* 碳: 黑 */
+        .atom-H { background: radial-gradient(circle at 30% 30%, #63b3ed, #3182ce); }  /* 氫: 藍 */
+        .atom-O { background: radial-gradient(circle at 30% 30%, #fc8181, #e53e3e); }  /* 氧: 紅 */
+        .atom-Ca { background: radial-gradient(circle at 30% 30%, #f6ad55, #dd6b20); } /* 鈣: 橘 */
+        .atom-Cl { background: radial-gradient(circle at 30% 30%, #68d391, #38a169); } /* 氯: 綠 */
 
         .product-card {
             background: #f7fafc;
@@ -137,8 +153,8 @@
         .slots-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            min-height: 60px;
+            gap: 8px;
+            min-height: 55px;
             background: #fff;
             border: 2px dashed #cbd5e0;
             border-radius: 6px;
@@ -146,20 +162,24 @@
             align-items: center;
         }
         .slot {
-            width: 46px;
-            height: 46px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 2px dashed #a0aec0;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 12px;
-            color: #a0aec0;
+            color: #cbd5e0;
             background: #fff;
-            transition: all 0.2s ease;
+        }
+        .boss-mode .slot {
+            width: 36px;
+            height: 36px;
+            font-size: 11px;
         }
         .slot.hovered {
-            background: #e2e8f0;
+            background: #edf2f7;
             border-color: #4a5568;
         }
         .slot.filled {
@@ -167,13 +187,13 @@
             background: transparent;
         }
         
-        /* 彈出視窗 */
+        /* 彈出過關視窗 */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6);
-            z-index: 100;
+            z-index: 2000;
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -186,13 +206,8 @@
             width: 100%;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: popIn 0.3s ease;
         }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .modal h2 { color: #2f855a; margin-top: 0; }
+        .modal h2 { color: #2b6cb0; margin-top: 0; }
         .report-box {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -208,185 +223,225 @@
             background-color: #3182ce;
             color: white;
             border: none;
-            padding: 10px 20px;
-            font-size: 15px;
+            padding: 12px 24px;
+            font-size: 16px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
         }
         .btn:hover { background-color: #2b6cb0; }
         
-        /* 平板直向適應 */
         @media (max-width: 768px) {
             .game-container { flex-direction: column; }
-            .atom-pool { min-height: 90px; }
+            #right-panel { max-height: none; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>🕵️‍♂️ 科学偵探社：原子大風吹任務</h1>
-        <div class="story-box">
-            <strong>【案發現場證詞】</strong> 嫌疑犯打破了<strong>碳酸鈣粉末(CaCO₃)</strong>罐子，為了湮滅證據，隨後倒入大量<strong>鹽酸(HCl)</strong>企圖將其溶解。現場開始劇烈冒泡！<br>
-            <strong>【偵探任務】</strong> 請開啟微觀原子放大鏡，將左側「反應物拆解後」的散落原子，透過<strong>【拖曳】</strong>的方式，重新排列組合配對到右側的「新產物格子」中，還原化學反應的真相！
+        <div class="level-badge" id="level-indicator">關卡：1 / 3</div>
+        <h1 id="level-title">科學偵探社：原子大風吹</h1>
+        <div class="story-box" id="story-text">
+            載入劇情中...
         </div>
     </header>
 
-    <div class="game-container">
-        <!-- 左側：反應物原子庫 -->
+    <div class="game-container" id="main-container">
+        <!-- 左側：反應物原子原料區 -->
         <div class="panel" id="left-panel">
             <div class="panel-title">
-                <span>🧪 原子原料區 (反應物已拆解)</span>
-                <span class="formula-hint">CaCO₃ + 2HCl</span>
+                <span>🧪 微觀原子放大鏡 (原料區)</span>
             </div>
-            <div class="atom-pool" id="atom-source-pool">
-                <!-- 由 JS 動態生成原子 -->
-            </div>
+            <div class="atom-pool" id="atom-source-pool"></div>
         </div>
 
         <!-- 右側：產物組裝區 -->
         <div class="panel" id="right-panel">
             <div class="panel-title">
                 <span>🧱 新物質組裝線 (產物區)</span>
-                <span class="formula-hint">請拖曳原子到對應框</span>
+                <span class="formula-hint">請將原子拖曳到下方對應框</span>
             </div>
-            
-            <!-- 氯化鈣 -->
-            <div class="product-card" data-product="CaCl2">
-                <div class="product-name">1. 氯化鈣溶液 (CaCl₂)</div>
-                <div class="slots-container" id="slots-CaCl2">
-                    <div class="slot" data-accept="Ca">Ca</div>
-                    <div class="slot" data-accept="Cl">Cl</div>
-                    <div class="slot" data-accept="Cl">Cl</div>
-                </div>
-            </div>
-
-            <!-- 水 -->
-            <div class="product-card" data-product="H2O">
-                <div class="product-name">2. 水 (H₂O)</div>
-                <div class="slots-container" id="slots-H2O">
-                    <div class="slot" data-accept="H">H</div>
-                    <div class="slot" data-accept="H">H</div>
-                    <div class="slot" data-accept="O">O</div>
-                </div>
-            </div>
-
-            <!-- 二氧化碳 -->
-            <div class="product-card" data-product="CO2">
-                <div class="product-name">3. 二氧化碳氣體 (CO₂ 💨 冒泡主因)</div>
-                <div class="slots-container" id="slots-CO2">
-                    <div class="slot" data-accept="C">C</div>
-                    <div class="slot" data-accept="O">O</div>
-                    <div class="slot" data-accept="O">O</div>
-                </div>
-            </div>
+            <div id="products-container"></div>
         </div>
     </div>
 
-    <!-- 成功彈出視窗 -->
-    <div class="modal" id="success-modal">
+    <!-- 中場/結案 彈出視窗 -->
+    <div class="modal" id="transition-modal">
         <div class="modal-content">
-            <h2>🎉 破案成功！完成偵查報告</h2>
-            <p>你成功利用微觀視角重組了原子，解開了實驗室密室之謎！</p>
-            <div class="report-box">
-                <strong>📝 我的科學偵探結案報告（可複製至學習歷程）：</strong><br><br>
-                「在本次校園偵探任務中，我發現化學反應並不是物質神奇地憑空消失或出現。透過微觀原子放大鏡，我親手將反應物（碳酸鈣與鹽酸）的原子結構拆開，並重新組合出氯化鈣、水以及不斷冒泡的二氧化碳氣體。<br>
-                這讓我深刻體會到：<strong>世界上所有的物質都是由原子組成的，而化學反應，本質上就是原子的重新排列組合。</strong>在過程中，原子的種類與數量都沒有改變，完美的驗證了物質不滅的科學定律！」
-            </div>
-            <button class="btn" onclick="resetGame()">再玩一次</button>
+            <h2 id="modal-title">🎉 完美配對！</h2>
+            <p id="modal-desc">正在分析化學反應證據...</p>
+            <div class="report-box" id="modal-report" style="display:none;"></div>
+            <button class="btn" id="modal-btn" onclick="nextAction()">前進下一關</button>
         </div>
     </div>
 
     <script>
-        // 初始化反應物原子清單 (CaCO3 + 2HCl)
-        // Total: 1 Ca, 1 C, 3 O, 2 H, 2 Cl
-        const atomTemplateList = [
-            { id: 'ca1', type: 'Ca', label: 'Ca' },
-            { id: 'c1', type: 'C', label: 'C' },
-            { id: 'o1', type: 'O', label: 'O' },
-            { id: 'o2', type: 'O', label: 'O' },
-            { id: 'o3', type: 'O', label: 'O' },
-            { id: 'h1', type: 'H', label: 'H' },
-            { id: 'h2', type: 'H', label: 'H' },
-            { id: 'cl1', type: 'Cl', label: 'Cl' },
-            { id: 'cl2', type: 'Cl', label: 'Cl' }
+        // 關卡資料庫
+        const gameLevels = [
+            {
+                title: "第一關：🔥 現場的可疑氣體 (入門)",
+                story: "<strong>【現場搜查】</strong> 嫌犯逃跑時好像燒毀了什麼東西，現場遺留下一股焦味與水氣。請微觀拆解原料，幫忙偵探團重新排列出 1 個<b>二氧化碳 (CO₂)</b> 分子與 1 個<b>水 (H₂O)</b> 分子，還原燃燒產物！",
+                atoms: [
+                    { type: 'C', label: 'C' },
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }
+                ],
+                products: [
+                    { name: "1. 二氧化碳 (CO₂)", slots: ['C', 'O', 'O'] },
+                    { name: "2. 水氣 (H₂O)", slots: ['H', 'H', 'O'] }
+                ]
+            },
+            {
+                title: "第二關：🧪 實驗室的滅證酸霧 (進階)",
+                story: "<strong>【現場搜查】</strong> 嫌犯企圖用大量<b>鹽酸 (HCl)</b> 來溶解打破的<b>碳酸鈣粉末 (CaCO₃)</b> 以湮滅證據。請重組打散的原子，還原出反應產物：<b>氯化鈣 (CaCl₂)</b>、<b>水 (H₂O)</b>，以及不斷冒泡的<b>二氧化碳 (CO₂)</b>！",
+                atoms: [
+                    { type: 'Ca', label: 'Ca' }, { type: 'C', label: 'C' },
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    { type: 'Cl', label: 'Cl' }, { type: 'Cl', label: 'Cl' }
+                ],
+                products: [
+                    { name: "1. 氯化鈣溶液 (CaCl₂)", slots: ['Ca', 'Cl', 'Cl'] },
+                    { name: "2. 水 (H₂O)", slots: ['H', 'H', 'O'] },
+                    { name: "3. 二氧化碳氣體 (CO₂)", slots: ['C', 'O', 'O'] }
+                ]
+            },
+            {
+                title: "第三關：🍃 溫室的甜蜜線索 (魔王關)",
+                story: "<strong>【生物學科交叉搜查】</strong> 嫌犯最後藏身在植物溫室中。現場植物剛照過陽光，正劇烈進行著七年級生物課學過的<b>光合作用</b>！請挑戰終極大魔王：將微觀原子重組出 1 個巨大的<b>葡萄糖 (C₆H₁₂O₆)</b> 能量分子與 1 個<b>氧氣 (O₂)</b> 分子！",
+                atoms: [
+                    // 6 C
+                    { type: 'C', label: 'C' }, { type: 'C', label: 'C' }, { type: 'C', label: 'C' },
+                    { type: 'C', label: 'C' }, { type: 'C', label: 'C' }, { type: 'C', label: 'C' },
+                    // 12 H
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    // 8 O
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }
+                ],
+                products: [
+                    { 
+                        name: "🕵️‍♂️ 生物關鍵證物：葡萄糖 (C₆H₁₂O₆)", 
+                        slots: [
+                            'C','C','C','C','C','C',
+                            'H','H','H','H','H','H','H','H','H','H','H','H',
+                            'O','O','O','O','O','O'
+                        ] 
+                    },
+                    { name: "🍃 植物釋放的氣體：氧氣 (O₂)", slots: ['O', 'O'] }
+                ]
+            }
         ];
 
+        let currentLevel = 0;
         const sourcePool = document.getElementById('atom-source-pool');
-        const successModal = document.getElementById('success-modal');
+        const productsContainer = document.getElementById('products-container');
+        const transitionModal = document.getElementById('transition-modal');
         
         let draggedElement = null;
         let touchOffsetX = 0;
         let touchOffsetY = 0;
         let originalParent = null;
 
-        // 打亂陣列順序讓遊戲更有挑戰性
         function shuffle(array) {
             return array.sort(() => Math.random() - 0.5);
         }
 
-        // 初始化遊戲
-        function initGame() {
-            sourcePool.innerHTML = '';
-            // 清空所有槽位
-            document.querySelectorAll('.slot').forEach(slot => {
-                slot.innerHTML = slot.getAttribute('data-accept');
-                slot.className = 'slot';
-            });
-
-            const shuffledAtoms = shuffle([...atomTemplateList]);
+        // 載入關卡
+        function loadLevel(levelIdx) {
+            const levelData = gameLevels[levelIdx];
             
-            shuffledAtoms.forEach(atomData => {
+            // 更新文字與介面
+            document.getElementById('level-indicator').innerText = `關卡：${levelIdx + 1} / ${gameLevels.length}`;
+            document.getElementById('level-title').innerText = levelData.title;
+            document.getElementById('story-text').innerHTML = levelData.story;
+            
+            // 魔王關卡縮小外觀以容納多原子
+            const container = document.getElementById('main-container');
+            if (levelIdx === 2) {
+                container.classList.add('boss-mode');
+            } else {
+                container.classList.remove('boss-mode');
+            }
+
+            // 清空原料區與產物區
+            sourcePool.innerHTML = '';
+            productsContainer.innerHTML = '';
+
+            // 生成亂序原子
+            const shuffledAtoms = shuffle([...levelData.atoms]);
+            shuffledAtoms.forEach((atomData, i) => {
                 const atomEl = document.createElement('div');
                 atomEl.className = `atom atom-${atomData.type}`;
-                atomEl.id = atomData.id;
+                atomEl.id = `atom-${levelIdx}-${i}`;
                 atomEl.dataset.type = atomData.type;
                 atomEl.innerText = atomData.label;
                 
-                // 綁定 Pointer Events (同時支援滑鼠與平板觸控)
+                // 綁定行動裝置平板萬用指標事件
                 atomEl.addEventListener('pointerdown', onPointerDown);
-                
                 sourcePool.appendChild(atomEl);
+            });
+
+            // 生成產物框與槽位
+            levelData.products.forEach((prod) => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                const name = document.createElement('div');
+                name.className = 'product-name';
+                name.innerText = prod.name;
+                
+                const slotsCont = document.createElement('div');
+                slotsCont.className = 'slots-container';
+                
+                prod.slots.forEach(slotType => {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.dataset.accept = slotType;
+                    slot.innerText = slotType;
+                    slotsCont.appendChild(slot);
+                });
+                
+                card.appendChild(name);
+                card.appendChild(slotsCont);
+                productsContainer.appendChild(card);
             });
         }
 
-        // Pointer Down 事件 (開始拖曳)
+        // Pointer Events 拖曳機制 (100% 支援 iPad/Android 平板觸控)
         function onPointerDown(e) {
             if (e.target.classList.contains('placed')) return;
             
             draggedElement = e.target;
             draggedElement.setPointerCapture(e.pointerId);
-            
             originalParent = draggedElement.parentElement;
             
-            // 計算手指/滑鼠點擊點與原子中心點的偏移量
             const rect = draggedElement.getBoundingClientRect();
             touchOffsetX = e.clientX - rect.left - rect.width / 2;
             touchOffsetY = e.clientY - rect.top - rect.height / 2;
             
-            // 設定絕對定位與樣式
             draggedElement.style.position = 'fixed';
             moveElement(e.clientX, e.clientY);
-            draggedElement.style.zIndex = '1000';
+            draggedElement.style.zIndex = '2000';
             
-            // 監聽移動與結束事件
             draggedElement.addEventListener('pointermove', onPointerMove);
             draggedElement.addEventListener('pointerup', onPointerUp);
             draggedElement.addEventListener('pointercancel', onPointerUp);
         }
 
-        // Pointer Move 事件 (拖曳中)
         function onPointerMove(e) {
             if (!draggedElement) return;
             moveElement(e.clientX, e.clientY);
             
-            // 模擬 Drag Over 效果：檢測下方是否有對應的 Slot
-            draggedElement.style.pointerEvents = 'none'; // 暫時關閉穿透，以便偵測下方元素
+            draggedElement.style.pointerEvents = 'none';
             const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
             draggedElement.style.pointerEvents = 'auto';
             
-            // 清除所有 slot 的 hovered 狀態
             document.querySelectorAll('.slot').forEach(s => s.classList.remove('hovered'));
             
             if (elementUnder) {
@@ -397,13 +452,11 @@
             }
         }
 
-        // 移動元素位置
         function moveElement(clientX, clientY) {
             draggedElement.style.left = `${clientX - draggedElement.offsetWidth / 2 - touchOffsetX}px`;
             draggedElement.style.top = `${clientY - draggedElement.offsetHeight / 2 - touchOffsetY}px`;
         }
 
-        // Pointer Up 事件 (放開原子)
         function onPointerUp(e) {
             if (!draggedElement) return;
             
@@ -416,13 +469,9 @@
                 targetSlot = elementUnder.closest('.slot');
             }
             
-            // 驗證是否放到正確的格子
-            if (targetSlot && 
-                !targetSlot.classList.contains('filled') && 
-                targetSlot.getAttribute('data-accept') === draggedElement.dataset.type) {
-                
-                // 放置成功
-                targetSlot.innerHTML = ''; // 清空文字提示
+            if (targetSlot && !targetSlot.classList.contains('filled') && targetSlot.getAttribute('data-accept') === draggedElement.dataset.type) {
+                // 配對成功
+                targetSlot.innerHTML = '';
                 draggedElement.style.position = 'static';
                 draggedElement.style.zIndex = '10';
                 draggedElement.classList.add('placed');
@@ -430,46 +479,70 @@
                 targetSlot.classList.add('filled');
                 targetSlot.classList.remove('hovered');
                 
-                // 移除此原子的拖曳事件
                 draggedElement.removeEventListener('pointerdown', onPointerDown);
-                
-                checkWinCondition();
+                checkLevelWin();
             } else {
-                // 放置失敗，彈回原原料區
+                // 配對失敗彈回
                 draggedElement.style.position = 'static';
                 draggedElement.style.zIndex = '10';
                 originalParent.appendChild(draggedElement);
             }
             
-            // 清理事件監聽
             document.querySelectorAll('.slot').forEach(s => s.classList.remove('hovered'));
             draggedElement.removeEventListener('pointermove', onPointerMove);
             draggedElement.removeEventListener('pointerup', onPointerUp);
             draggedElement.removeEventListener('pointercancel', onPointerUp);
-            
             draggedElement = null;
         }
 
-        // 檢查是否所有格子都填滿 (破案)
-        function checkWinCondition() {
-            const allSlots = document.querySelectorAll('.slot');
-            const filledSlots = document.querySelectorAll('.slot.filled');
+        function checkLevelWin() {
+            const allSlots = document.querySelectorAll('.slot').length;
+            const filledSlots = document.querySelectorAll('.slot.filled').length;
             
-            if (allSlots.length === filledSlots.length) {
+            if (allSlots === filledSlots) {
                 setTimeout(() => {
-                    successModal.style.display = 'flex';
+                    showModal();
                 }, 400);
             }
         }
 
-        // 重設遊戲
-        function resetGame() {
-            successModal.style.display = 'none';
-            initGame();
+        // 彈出過關視窗邏輯
+        function showModal() {
+            const mTitle = document.getElementById('modal-title');
+            const mDesc = document.getElementById('modal-desc');
+            const mReport = document.getElementById('modal-report');
+            const mBtn = document.getElementById('modal-btn');
+
+            if (currentLevel < 2) {
+                mTitle.innerText = `🎉 第 ${currentLevel + 1} 關解謎成功！`;
+                mDesc.innerText = "成功利用微觀放大鏡重組分子，科學線索已成功鎖定！";
+                mReport.style.display = "none";
+                mBtn.innerText = "前進下一關挑戰";
+            } else {
+                // 最終通關（大魔王完結）
+                mTitle.innerText = "🏆 恭喜破案！榮獲特級科學偵探勳章";
+                mDesc.innerText = "你成功攻克了高難度的葡萄糖分子重組！請複製下方結案報告放入學習歷程：";
+                mReport.innerHTML = `<strong>📝 我的科學偵探結案報告：</strong><br><br>
+                「在本次科學偵探社的三關漸進式挑戰中，我學到了物質是由微小的原子組成的。無論是簡單的水、二氧化碳，還是生物課學過、結構複雜的<b>葡萄糖 (C₆H₁₂O₆)</b>，本質上都是由碳、氫、氧等原子群排列而成。<br>
+                透過動手拆解與重組，我發現<b>化學反應其實就是原子的『重新排列組合』</b>。在反應前後，原子的種類沒有變、數量也沒有增減，這完美呼應了質量守恆定律。這趟微觀破案旅程，讓我真正看見了課本知識在法醫科學上的奇妙應用！」`;
+                mReport.style.display = "block";
+                mBtn.innerText = "重新回味挑戰";
+            }
+            transitionModal.style.display = 'flex';
         }
 
-        // 啟動遊戲
-        window.onload = initGame;
+        function nextAction() {
+            transitionModal.style.display = 'none';
+            if (currentLevel < 2) {
+                currentLevel++;
+                loadLevel(currentLevel);
+            } else {
+                currentLevel = 0;
+                loadLevel(currentLevel);
+            }
+        }
+
+        window.onload = () => loadLevel(currentLevel);
     </script>
 </body>
 </html>
