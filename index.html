@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>科學偵探社：原子大風吹密室逃脫</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+            color: #2c3e50;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+            width: 100%;
+            max-width: 1000px;
+        }
+        h1 {
+            font-size: 24px;
+            color: #1a365d;
+            margin: 5px 0;
+        }
+        .story-box {
+            background-color: #fff;
+            border-left: 5px solid #3182ce;
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .game-container {
+            display: flex;
+            width: 100%;
+            max-width: 1000px;
+            gap: 15px;
+            flex-grow: 1;
+        }
+        .panel {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        #left-panel {
+            flex: 2;
+            min-width: 280px;
+        }
+        #right-panel {
+            flex: 3;
+        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            color: #2b6cb0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .formula-hint {
+            font-size: 13px;
+            color: #718096;
+            font-weight: normal;
+        }
+        .atom-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 6px;
+            min-height: 120px;
+            align-content: flex-start;
+            position: relative;
+        }
+        .atom {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: grab;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 10;
+            touch-action: none;
+            transition: transform 0.1s ease;
+        }
+        .atom:active {
+            cursor: grabbing;
+            transform: scale(1.1);
+        }
+        /* 原子顏色設定 */
+        .atom-Ca { background: radial-gradient(circle at 30% 30%, #ed8936, #dd6b20); } /* 鈣: 橘 */
+        .atom-C { background: radial-gradient(circle at 30% 30%, #4a5568, #2d3748); }  /* 碳: 灰黑 */
+        .atom-O { background: radial-gradient(circle at 30% 30%, #f56565, #e53e3e); }  /* 氧: 紅 */
+        .atom-H { background: radial-gradient(circle at 30% 30%, #4299e1, #3182ce); }  /* 氫: 藍 */
+        .atom-Cl { background: radial-gradient(circle at 30% 30%, #48bb78, #38a169); } /* 氯: 綠 */
+
+        .product-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 15px;
+            margin-bottom: 8px;
+            color: #4a5568;
+        }
+        .slots-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            min-height: 60px;
+            background: #fff;
+            border: 2px dashed #cbd5e0;
+            border-radius: 6px;
+            padding: 8px;
+            align-items: center;
+        }
+        .slot {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px dashed #a0aec0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #a0aec0;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        .slot.hovered {
+            background: #e2e8f0;
+            border-color: #4a5568;
+        }
+        .slot.filled {
+            border: none;
+            background: transparent;
+        }
+        
+        /* 彈出視窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 550px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal h2 { color: #2f855a; margin-top: 0; }
+        .report-box {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 15px 0;
+            color: #4a5568;
+        }
+        .btn {
+            background-color: #3182ce;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover { background-color: #2b6cb0; }
+        
+        /* 平板直向適應 */
+        @media (max-width: 768px) {
+            .game-container { flex-direction: column; }
+            .atom-pool { min-height: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🕵️‍♂️ 科学偵探社：原子大風吹任務</h1>
+        <div class="story-box">
+            <strong>【案發現場證詞】</strong> 嫌疑犯打破了<strong>碳酸鈣粉末(CaCO₃)</strong>罐子，為了湮滅證據，隨後倒入大量<strong>鹽酸(HCl)</strong>企圖將其溶解。現場開始劇烈冒泡！<br>
+            <strong>【偵探任務】</strong> 請開啟微觀原子放大鏡，將左側「反應物拆解後」的散落原子，透過<strong>【拖曳】</strong>的方式，重新排列組合配對到右側的「新產物格子」中，還原化學反應的真相！
+        </div>
+    </header>
+
+    <div class="game-container">
+        <!-- 左側：反應物原子庫 -->
+        <div class="panel" id="left-panel">
+            <div class="panel-title">
+                <span>🧪 原子原料區 (反應物已拆解)</span>
+                <span class="formula-hint">CaCO₃ + 2HCl</span>
+            </div>
+            <div class="atom-pool" id="atom-source-pool">
+                <!-- 由 JS 動態生成原子 -->
+            </div>
+        </div>
+
+        <!-- 右側：產物組裝區 -->
+        <div class="panel" id="right-panel">
+            <div class="panel-title">
+                <span>🧱 新物質組裝線 (產物區)</span>
+                <span class="formula-hint">請拖曳原子到對應框</span>
+            </div>
+            
+            <!-- 氯化鈣 -->
+            <div class="product-card" data-product="CaCl2">
+                <div class="product-name">1. 氯化鈣溶液 (CaCl₂)</div>
+                <div class="slots-container" id="slots-CaCl2">
+                    <div class="slot" data-accept="Ca">Ca</div>
+                    <div class="slot" data-accept="Cl">Cl</div>
+                    <div class="slot" data-accept="Cl">Cl</div>
+                </div>
+            </div>
+
+            <!-- 水 -->
+            <div class="product-card" data-product="H2O">
+                <div class="product-name">2. 水 (H₂O)</div>
+                <div class="slots-container" id="slots-H2O">
+                    <div class="slot" data-accept="H">H</div>
+                    <div class="slot" data-accept="H">H</div>
+                    <div class="slot" data-accept="O">O</div>
+                </div>
+            </div>
+
+            <!-- 二氧化碳 -->
+            <div class="product-card" data-product="CO2">
+                <div class="product-name">3. 二氧化碳氣體 (CO₂ 💨 冒泡主因)</div>
+                <div class="slots-container" id="slots-CO2">
+                    <div class="slot" data-accept="C">C</div>
+                    <div class="slot" data-accept="O">O</div>
+                    <div class="slot" data-accept="O">O</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成功彈出視窗 -->
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <h2>🎉 破案成功！完成偵查報告</h2>
+            <p>你成功利用微觀視角重組了原子，解開了實驗室密室之謎！</p>
+            <div class="report-box">
+                <strong>📝 我的科學偵探結案報告（可複製至學習歷程）：</strong><br><br>
+                「在本次校園偵探任務中，我發現化學反應並不是物質神奇地憑空消失或出現。透過微觀原子放大鏡，我親手將反應物（碳酸鈣與鹽酸）的原子結構拆開，並重新組合出氯化鈣、水以及不斷冒泡的二氧化碳氣體。<br>
+                這讓我深刻體會到：<strong>世界上所有的物質都是由原子組成的，而化學反應，本質上就是原子的重新排列組合。</strong>在過程中，原子的種類與數量都沒有改變，完美的驗證了物質不滅的科學定律！」
+            </div>
+            <button class="btn" onclick="resetGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化反應物原子清單 (CaCO3 + 2HCl)
+        // Total: 1 Ca, 1 C, 3 O, 2 H, 2 Cl
+        const atomTemplateList = [
+            { id: 'ca1', type: 'Ca', label: 'Ca' },
+            { id: 'c1', type: 'C', label: 'C' },
+            { id: 'o1', type: 'O', label: 'O' },
+            { id: 'o2', type: 'O', label: 'O' },
+            { id: 'o3', type: 'O', label: 'O' },
+            { id: 'h1', type: 'H', label: 'H' },
+            { id: 'h2', type: 'H', label: 'H' },
+            { id: 'cl1', type: 'Cl', label: 'Cl' },
+            { id: 'cl2', type: 'Cl', label: 'Cl' }
+        ];
+
+        const sourcePool = document.getElementById('atom-source-pool');
+        const successModal = document.getElementById('success-modal');
+        
+        let draggedElement = null;
+        let touchOffsetX = 0;
+        let touchOffsetY = 0;
+        let originalParent = null;
+
+        // 打亂陣列順序讓遊戲更有挑戰性
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        // 初始化遊戲
+        function initGame() {
+            sourcePool.innerHTML = '';
+            // 清空所有槽位
+            document.querySelectorAll('.slot').forEach(slot => {
+                slot.innerHTML = slot.getAttribute('data-accept');
+                slot.className = 'slot';
+            });
+
+            const shuffledAtoms = shuffle([...atomTemplateList]);
+            
+            shuffledAtoms.forEach(atomData => {
+                const atomEl = document.createElement('div');
+                atomEl.className = `atom atom-${atomData.type}`;
+                atomEl.id = atomData.id;
+                atomEl.dataset.type = atomData.type;
+                atomEl.innerText = atomData.label;
+                
+                // 綁定 Pointer Events (同時支援滑鼠與平板觸控)
+                atomEl.addEventListener('pointerdown', onPointerDown);
+                
+                sourcePool.appendChild(atomEl);
+            });
+        }
+
+        // Pointer Down 事件 (開始拖曳)
+        function onPointerDown(e) {
+            if (e.target.classList.contains('placed')) return;
+            
+            draggedElement = e.target;
+            draggedElement.setPointerCapture(e.pointerId);
+            
+            originalParent = draggedElement.parentElement;
+            
+            // 計算手指/滑鼠點擊點與原子中心點的偏移量
+            const rect = draggedElement.getBoundingClientRect();
+            touchOffsetX = e.clientX - rect.left - rect.width / 2;
+            touchOffsetY = e.clientY - rect.top - rect.height / 2;
+            
+            // 設定絕對定位與樣式
+            draggedElement.style.position = 'fixed';
+            moveElement(e.clientX, e.clientY);
+            draggedElement.style.zIndex = '1000';
+            
+            // 監聽移動與結束事件
+            draggedElement.addEventListener('pointermove', onPointerMove);
+            draggedElement.addEventListener('pointerup', onPointerUp);
+            draggedElement.addEventListener('pointercancel', onPointerUp);
+        }
+
+        // Pointer Move 事件 (拖曳中)
+        function onPointerMove(e) {
+            if (!draggedElement) return;
+            moveElement(e.clientX, e.clientY);
+            
+            // 模擬 Drag Over 效果：檢測下方是否有對應的 Slot
+            draggedElement.style.pointerEvents = 'none'; // 暫時關閉穿透，以便偵測下方元素
+            const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+            draggedElement.style.pointerEvents = 'auto';
+            
+            // 清除所有 slot 的 hovered 狀態
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('hovered'));
+            
+            if (elementUnder) {
+                const slot = elementUnder.closest('.slot');
+                if (slot && !slot.classList.contains('filled') && slot.getAttribute('data-accept') === draggedElement.dataset.type) {
+                    slot.classList.add('hovered');
+                }
+            }
+        }
+
+        // 移動元素位置
+        function moveElement(clientX, clientY) {
+            draggedElement.style.left = `${clientX - draggedElement.offsetWidth / 2 - touchOffsetX}px`;
+            draggedElement.style.top = `${clientY - draggedElement.offsetHeight / 2 - touchOffsetY}px`;
+        }
+
+        // Pointer Up 事件 (放開原子)
+        function onPointerUp(e) {
+            if (!draggedElement) return;
+            
+            draggedElement.style.pointerEvents = 'none';
+            const elementUnder = document.elementFromPoint(e.clientX, e.clientY);
+            draggedElement.style.pointerEvents = 'auto';
+            
+            let targetSlot = null;
+            if (elementUnder) {
+                targetSlot = elementUnder.closest('.slot');
+            }
+            
+            // 驗證是否放到正確的格子
+            if (targetSlot && 
+                !targetSlot.classList.contains('filled') && 
+                targetSlot.getAttribute('data-accept') === draggedElement.dataset.type) {
+                
+                // 放置成功
+                targetSlot.innerHTML = ''; // 清空文字提示
+                draggedElement.style.position = 'static';
+                draggedElement.style.zIndex = '10';
+                draggedElement.classList.add('placed');
+                targetSlot.appendChild(draggedElement);
+                targetSlot.classList.add('filled');
+                targetSlot.classList.remove('hovered');
+                
+                // 移除此原子的拖曳事件
+                draggedElement.removeEventListener('pointerdown', onPointerDown);
+                
+                checkWinCondition();
+            } else {
+                // 放置失敗，彈回原原料區
+                draggedElement.style.position = 'static';
+                draggedElement.style.zIndex = '10';
+                originalParent.appendChild(draggedElement);
+            }
+            
+            // 清理事件監聽
+            document.querySelectorAll('.slot').forEach(s => s.classList.remove('hovered'));
+            draggedElement.removeEventListener('pointermove', onPointerMove);
+            draggedElement.removeEventListener('pointerup', onPointerUp);
+            draggedElement.removeEventListener('pointercancel', onPointerUp);
+            
+            draggedElement = null;
+        }
+
+        // 檢查是否所有格子都填滿 (破案)
+        function checkWinCondition() {
+            const allSlots = document.querySelectorAll('.slot');
+            const filledSlots = document.querySelectorAll('.slot.filled');
+            
+            if (allSlots.length === filledSlots.length) {
+                setTimeout(() => {
+                    successModal.style.display = 'flex';
+                }, 400);
+            }
+        }
+
+        // 重設遊戲
+        function resetGame() {
+            successModal.style.display = 'none';
+            initGame();
+        }
+
+        // 啟動遊戲
+        window.onload = initGame;
+    </script>
+</body>
+</html>
