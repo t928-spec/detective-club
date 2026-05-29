@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>科學偵探社：微觀原子大風吹</title>
+    <title>科學偵探社：神祕分子鑑定賽</title>
     <style>
         * {
             box-sizing: border-box;
@@ -13,7 +13,7 @@
         }
         body {
             font-family: 'Helvetica Neue', Arial, 'Noto Sans TC', sans-serif;
-            background-color: #f7fafc;
+            background-color: #f0f4f8;
             color: #2d3748;
             margin: 0;
             padding: 10px;
@@ -89,11 +89,6 @@
             justify-content: space-between;
             align-items: center;
         }
-        .formula-hint {
-            font-size: 13px;
-            color: #718096;
-            font-weight: normal;
-        }
         .atom-pool {
             display: flex;
             flex-wrap: wrap;
@@ -119,23 +114,17 @@
             position: relative;
             touch-action: none;
         }
-        .atom:active {
-            cursor: grabbing;
-        }
-        
-        /* 魔王關原子縮小適應平板畫面 */
         .boss-mode .atom {
             width: 38px;
             height: 38px;
             font-size: 13px;
         }
 
-        /* 原子3D視覺特效 */
-        .atom-C { background: radial-gradient(circle at 30% 30%, #4a5568, #1a202c); }  /* 碳: 黑 */
-        .atom-H { background: radial-gradient(circle at 30% 30%, #63b3ed, #3182ce); }  /* 氫: 藍 */
-        .atom-O { background: radial-gradient(circle at 30% 30%, #fc8181, #e53e3e); }  /* 氧: 紅 */
-        .atom-Ca { background: radial-gradient(circle at 30% 30%, #f6ad55, #dd6b20); } /* 鈣: 橘 */
-        .atom-Cl { background: radial-gradient(circle at 30% 30%, #68d391, #38a169); } /* 氯: 綠 */
+        .atom-C { background: radial-gradient(circle at 30% 30%, #4a5568, #1a202c); }
+        .atom-H { background: radial-gradient(circle at 30% 30%, #63b3ed, #3182ce); }
+        .atom-O { background: radial-gradient(circle at 30% 30%, #fc8181, #e53e3e); }
+        .atom-Ca { background: radial-gradient(circle at 30% 30%, #f6ad55, #dd6b20); }
+        .atom-Cl { background: radial-gradient(circle at 30% 30%, #68d391, #38a169); }
 
         .product-card {
             background: #f7fafc;
@@ -143,12 +132,30 @@
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+        .product-card.identified {
+            background: #f0fff4;
+            border-color: #38a169;
         }
         .product-name {
             font-weight: bold;
             font-size: 15px;
             margin-bottom: 8px;
             color: #4a5568;
+            display: flex;
+            justify-content: space-between;
+        }
+        .status-tag {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+        .product-card.identified .status-tag {
+            background: #38a169;
+            color: white;
         }
         .slots-container {
             display: flex;
@@ -187,7 +194,6 @@
             background: transparent;
         }
         
-        /* 彈出過關視窗 */
         .modal {
             display: none;
             position: fixed;
@@ -207,7 +213,23 @@
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .modal h2 { color: #2b6cb0; margin-top: 0; }
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #edf2f7;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .quiz-option:active {
+            background: #cbd5e0;
+        }
         .report-box {
             background: #f7fafc;
             border: 1px solid #e2e8f0;
@@ -229,7 +251,6 @@
             cursor: pointer;
             font-weight: bold;
         }
-        .btn:hover { background-color: #2b6cb0; }
         
         @media (max-width: 768px) {
             .game-container { flex-direction: column; }
@@ -240,15 +261,12 @@
 <body>
 
     <header>
-        <div class="level-badge" id="level-indicator">關卡：1 / 3</div>
-        <h1 id="level-title">科學偵探社：原子大風吹</h1>
-        <div class="story-box" id="story-text">
-            載入劇情中...
-        </div>
+        <div class="level-badge" id="level-indicator">關卡：1 / 4</div>
+        <h1 id="level-title">科學偵探社：神祕分子鑑定賽</h1>
+        <div class="story-box" id="story-text">載入劇情中...</div>
     </header>
 
     <div class="game-container" id="main-container">
-        <!-- 左側：反應物原子原料區 -->
         <div class="panel" id="left-panel">
             <div class="panel-title">
                 <span>🧪 微觀原子放大鏡 (原料區)</span>
@@ -256,45 +274,55 @@
             <div class="atom-pool" id="atom-source-pool"></div>
         </div>
 
-        <!-- 右側：產物組裝區 -->
         <div class="panel" id="right-panel">
             <div class="panel-title">
-                <span>🧱 新物質組裝線 (產物區)</span>
-                <span class="formula-hint">請將原子拖曳到下方對應框</span>
+                <span>🧱 證物成分組裝線 (產物區)</span>
             </div>
             <div id="products-container"></div>
         </div>
     </div>
 
-    <!-- 中場/結案 彈出視窗 -->
-    <div class="modal" id="transition-modal">
-        <div class="modal-content">
-            <h2 id="modal-title">🎉 完美配對！</h2>
-            <p id="modal-desc">正在分析化學反應證據...</p>
-            <div class="report-box" id="modal-report" style="display:none;"></div>
-            <button class="btn" id="modal-btn" onclick="nextAction()">前進下一關</button>
-        </div>
+    <div class="modal" id="game-modal">
+        <div class="modal-content" id="modal-inner-content">
+            </div>
     </div>
 
     <script>
-        // 關卡資料庫
         const gameLevels = [
             {
-                title: "第一關：🔥 現場的可疑氣體 (入門)",
-                story: "<strong>【現場搜查】</strong> 嫌犯逃跑時好像燒毀了什麼東西，現場遺留下一股焦味與水氣。請微觀拆解原料，幫忙偵探團重新排列出 1 個<b>二氧化碳 (CO₂)</b> 分子與 1 個<b>水 (H₂O)</b> 分子，還原燃燒產物！",
+                title: "第一關：🔥 現場的可疑殘留物 (入門)",
+                story: "<strong>【現場搜查】</strong> 嫌犯縱火滅證，現場留下一股焦味與霧氣。請先將原子依比例塞入格子中，再根據「生物與理化線索」猜出它們是哪種分子！",
                 atoms: [
                     { type: 'C', label: 'C' },
                     { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
                     { type: 'H', label: 'H' }, { type: 'H', label: 'H' }
                 ],
                 products: [
-                    { name: "1. 二氧化碳 (CO₂)", slots: ['C', 'O', 'O'] },
-                    { name: "2. 水氣 (H₂O)", slots: ['H', 'H', 'O'] }
+                    {
+                        placeholder: "未知神祕氣體 A",
+                        realName: "💨 二氧化碳 (CO₂)",
+                        slots: ['C', 'O', 'O'],
+                        quiz: {
+                            q: "【鑑定提示】這款分子由 1個碳原子 和 2個氧原子 組成。它是燃燒的主要產物，也是植物進行光合作用所需的原料。它是？",
+                            options: ["(A) 氧氣 (O₂)", "(B) 二氧化碳 (CO₂)", "(C) 一氧化碳 (CO)"],
+                            ans: 1
+                        }
+                    },
+                    {
+                        placeholder: "未知液體殘留物 B",
+                        realName: "💧 水氣 (H₂O)",
+                        slots: ['H', 'H', 'O'],
+                        quiz: {
+                            q: "【鑑定提示】這款分子由 2個氫原子 和 1個氧原子 組成。它是生物體內含量最多的物質，也是呼吸作用的產物之一。它是？",
+                            options: ["(A) 水 (H₂O)", "(B) 雙氧水 (H₂O₂)", "(C) 葡萄糖 (C₆H₁₂O₆)"],
+                            ans: 0
+                        }
+                    }
                 ]
             },
             {
                 title: "第二關：🧪 實驗室的滅證酸霧 (進階)",
-                story: "<strong>【現場搜查】</strong> 嫌犯企圖用大量<b>鹽酸 (HCl)</b> 來溶解打破的<b>碳酸鈣粉末 (CaCO₃)</b> 以湮滅證據。請重組打散的原子，還原出反應產物：<b>氯化鈣 (CaCl₂)</b>、<b>水 (H₂O)</b>，以及不斷冒泡的<b>二氧化碳 (CO₂)</b>！",
+                story: "<strong>【現場搜查】</strong> 嫌犯將<b>鹽酸 (HCl)</b> 潑向<b>碳酸鈣 (CaCO₃)</b> 企圖滅證！請重組產物原子，並猜出除水與二氧化碳外，留在地上的白鹽是什麼？",
                 atoms: [
                     { type: 'Ca', label: 'Ca' }, { type: 'C', label: 'C' },
                     { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
@@ -302,74 +330,139 @@
                     { type: 'Cl', label: 'Cl' }, { type: 'Cl', label: 'Cl' }
                 ],
                 products: [
-                    { name: "1. 氯化鈣溶液 (CaCl₂)", slots: ['Ca', 'Cl', 'Cl'] },
-                    { name: "2. 水 (H₂O)", slots: ['H', 'H', 'O'] },
-                    { name: "3. 二氧化碳氣體 (CO₂)", slots: ['C', 'O', 'O'] }
+                    {
+                        placeholder: "未知地表白色鹽類 C",
+                        realName: "🧪 氯化鈣溶液 (CaCl₂)",
+                        slots: ['Ca', 'Cl', 'Cl'],
+                        quiz: {
+                            q: "【鑑定提示】由 1個鈣原子 與 2個氯原子 組成。這是酸鹼中和/複分解反應留下的中性鹽類，常見於除濕劑中。它是？",
+                            options: ["(A) 氯化鈉/食鹽 (NaCl)", "(B) 碳酸鈉 (Na₂CO₃)", "(C) 氯化鈣 (CaCl₂)"],
+                            ans: 2
+                        }
+                    },
+                    {
+                        placeholder: "未知產物 D",
+                        realName: "💧 水 (H₂O)",
+                        slots: ['H', 'H', 'O'],
+                        quiz: {
+                            q: "【鑑定提示】再次出現！由 2個氫與 1個氧組成，這是最常見的酸鹼反應產物，它是？",
+                            options: ["(A) 水 (H₂O)", "(B) 鹽酸 (HCl)"],
+                            ans: 0
+                        }
+                    },
+                    {
+                        placeholder: "未知酸霧氣體 E",
+                        realName: "💨 二氧化碳 (CO₂)",
+                        slots: ['C', 'O', 'O'],
+                        quiz: {
+                            q: "【鑑定提示】由 1個碳與 2個氧組成，這是在現場讓酸液劇烈「冒泡」飛走的主要氣體。它是？",
+                            options: ["(A) 氫氣 (H₂)", "(B) 二氧化碳 (CO₂)", "(C) 氯氣 (Cl₂)"],
+                            ans: 1
+                        }
+                    }
                 ]
             },
             {
                 title: "第三關：🍃 溫室的甜蜜線索 (魔王關)",
-                story: "<strong>【生物學科交叉搜查】</strong> 嫌犯最後藏身在植物溫室中。現場植物剛照過陽光，正劇烈進行著七年級生物課學過的<b>光合作用</b>！請挑戰終極大魔王：將微觀原子重組出 1 個巨大的<b>葡萄糖 (C₆H₁₂O₆)</b> 能量分子與 1 個<b>氧氣 (O₂)</b> 分子！",
+                story: "<strong>【終極搜查】</strong> 嫌犯逃進溫室，裡面的植物正劇烈進行著七年級學過的<b>光合作用</b>！請挑戰拼出巨大的有機分子，並用生物課知識鑑定出它到底是誰！",
                 atoms: [
-                    // 6 C
                     { type: 'C', label: 'C' }, { type: 'C', label: 'C' }, { type: 'C', label: 'C' },
                     { type: 'C', label: 'C' }, { type: 'C', label: 'C' }, { type: 'C', label: 'C' },
-                    // 12 H
                     { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
                     { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
                     { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
                     { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
-                    // 8 O
                     { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
                     { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' },
                     { type: 'O', label: 'O' }, { type: 'O', label: 'O' }
                 ],
                 products: [
-                    { 
-                        name: "🕵️‍♂️ 生物關鍵證物：葡萄糖 (C₆H₁₂O₆)", 
+                    {
+                        placeholder: "🕵️‍♂️ 溫室核心龐大分子 F",
+                        realName: "🍬 葡萄糖能量分子 (C₆H₁₂O₆)",
                         slots: [
                             'C','C','C','C','C','C',
                             'H','H','H','H','H','H','H','H','H','H','H','H',
                             'O','O','O','O','O','O'
-                        ] 
+                        ],
+                        quiz: {
+                            q: "【終極生物線索】由 6個碳、12個氫、6個氧 組成！這是光合作用產生的核心產物，也是七年級生物課學過，細胞可以直接利用、用本氏液檢驗會變色的能量來源。它是？",
+                            options: ["(A) 澱粉", "(B) 蛋白質", "(C) 葡萄糖 (C₆H₁₂O₆)"],
+                            ans: 2
+                        }
                     },
-                    { name: "🍃 植物釋放的氣體：氧氣 (O₂)", slots: ['O', 'O'] }
+                    {
+                        placeholder: "🍃 植物釋放的副產物 G",
+                        realName: "💨 氧氣 (O₂)",
+                        slots: ['O', 'O'],
+                        quiz: {
+                            q: "【鑑定提示】由 2個氧原子 組成。這是光合作用釋放出來、供生物體進行呼吸作用維持生命所需的氣體。它是？",
+                            options: ["(A) 氧氣 (O₂)", "(B) 氮氣 (N₂)", "(C) 二氧化碳 (CO₂)"],
+                            ans: 0
+                        }
+                    }
+                ]
+            },
+            {
+                title: "第四關：🕵️‍♂️ 終極溯源！神祕的盲測盤點 (隱藏關卡)",
+                story: "<strong>【逆向思考終極大考驗】</strong> 這次右邊的組裝線被鎖定了！請你先仔細清點左側盤子裡的所有原子總數。根據原子種類與數量的『完美比例』，盲猜這盤原料<b>全部用完不留剩餘</b>時，會是哪組分子的產物？猜對才能解鎖組裝線！",
+                isBlind: true, // 啟動前置盲猜機制
+                blindQuiz: {
+                    q: "【偵探總盤點】原料盤中共有：2個碳(C)、4個氫(H)、6個氧(O) 原子。請結合前三關經驗與生物課「細胞呼吸作用」釋放二氧化碳與水的概念，盲猜這堆原子是哪些分子的剛好總原料？",
+                    options: [
+                        "(A) 剛好是 1個葡萄糖 (C₆H₁₂O₆) 的原料",
+                        "(B) 剛好是 2個二氧化碳 (CO₂) + 2個水 (H₂O) 的原料",
+                        "(C) 剛好是 1個碳酸鈣 (CaCO₃) 的原料"
+                    ],
+                    ans: 1
+                },
+                atoms: [
+                    { type: 'C', label: 'C' }, { type: 'C', label: 'C' },
+                    { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' }, { type: 'H', label: 'H' },
+                    { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' }, { type: 'O', label: 'O' }
+                ],
+                products: [
+                    {
+                        placeholder: "❓ 神祕盲測分子 X (數量 x2)",
+                        realName: "💨 驗證成功：2個 二氧化碳 (CO₂)",
+                        slots: ['C', 'O', 'O', 'C', 'O', 'O'],
+                        quiz: { q: "這 2個分子能讓澄清石灰水變混濁，它的化學式是？", options: ["(A) CO₂", "(B) H₂O"], ans: 0 }
+                    },
+                    {
+                        placeholder: "❓ 神祕盲測分子 Y (數量 x2)",
+                        realName: "💧 驗證成功：2個 水分子 (H₂O)",
+                        slots: ['H', 'H', 'O', 'H', 'H', 'O'],
+                        quiz: { q: "這 2個分子能讓藍色氯化亞鈷試紙變粉紅色，它的化學式是？", options: ["(A) O₂", "(B) H₂O"], ans: 1 }
+                    }
                 ]
             }
         ];
 
         let currentLevel = 0;
+        let activeQuizCardIdx = null;
+        let blindSolved = false;
         const sourcePool = document.getElementById('atom-source-pool');
         const productsContainer = document.getElementById('products-container');
-        const transitionModal = document.getElementById('transition-modal');
+        const gameModal = document.getElementById('game-modal');
+        const modalInner = document.getElementById('modal-inner-content');
         
         let draggedElement = null;
         let touchOffsetX = 0;
         let touchOffsetY = 0;
         let originalParent = null;
 
-        function shuffle(array) {
-            return array.sort(() => Math.random() - 0.5);
-        }
+        function shuffle(array) { return array.sort(() => Math.random() - 0.5); }
 
-        // 載入關卡
         function loadLevel(levelIdx) {
             const levelData = gameLevels[levelIdx];
-            
-            // 更新文字與介面
             document.getElementById('level-indicator').innerText = `關卡：${levelIdx + 1} / ${gameLevels.length}`;
             document.getElementById('level-title').innerText = levelData.title;
             document.getElementById('story-text').innerHTML = levelData.story;
             
-            // 魔王關卡縮小外觀以容納多原子
             const container = document.getElementById('main-container');
-            if (levelIdx === 2) {
-                container.classList.add('boss-mode');
-            } else {
-                container.classList.remove('boss-mode');
-            }
+            if (levelIdx >= 2) container.className = 'game-container boss-mode';
+            else container.className = 'game-container';
 
-            // 清空原料區與產物區
             sourcePool.innerHTML = '';
             productsContainer.innerHTML = '';
 
@@ -381,20 +474,39 @@
                 atomEl.id = `atom-${levelIdx}-${i}`;
                 atomEl.dataset.type = atomData.type;
                 atomEl.innerText = atomData.label;
-                
-                // 綁定行動裝置平板萬用指標事件
                 atomEl.addEventListener('pointerdown', onPointerDown);
                 sourcePool.appendChild(atomEl);
             });
 
-            // 生成產物框與槽位
-            levelData.products.forEach((prod) => {
+            // 判斷是否為第四關前置盲猜
+            if (levelData.isBlind && !blindSolved) {
+                productsContainer.innerHTML = `
+                    <div style="text-align:center; padding:30px; border: 2px dashed #e53e3e; border-radius:8px; background:#fff5f5;">
+                        <h3 style="color:#c53030; margin-top:0;">🔒 組裝線防禦鎖定中</h3>
+                        <p style="font-size:14px; color:#9b2c2c;">偵探必須先透過觀察原子的種類與數量，解開左側的「盲測鑑定任務」，才能知道要組裝什麼物質！</p>
+                        <button class="btn" style="background-color:#c53030;" onclick="triggerBlindLevelQuiz()">啟動盲測鑑定任務</button>
+                    </div>
+                `;
+                // 自動觸發盲猜彈窗
+                setTimeout(() => { triggerBlindLevelQuiz(); }, 500);
+            } else {
+                renderProductCards(levelData);
+            }
+        }
+
+        function renderProductCards(levelData) {
+            productsContainer.innerHTML = '';
+            levelData.products.forEach((prod, pIdx) => {
+                prod.isGuessed = false;
+                
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                card.id = `prod-card-${pIdx}`;
                 
                 const name = document.createElement('div');
                 name.className = 'product-name';
-                name.innerText = prod.name;
+                name.id = `prod-name-${pIdx}`;
+                name.innerHTML = `<span>${prod.placeholder}</span> <span class="status-tag" id="tag-${pIdx}">尚未組裝</span>`;
                 
                 const slotsCont = document.createElement('div');
                 slotsCont.className = 'slots-container';
@@ -413,9 +525,47 @@
             });
         }
 
-        // Pointer Events 拖曳機制 (100% 支援 iPad/Android 平板觸控)
+        // 觸發第四關特有的前置盲猜彈窗
+        function triggerBlindLevelQuiz() {
+            const quizData = gameLevels[currentLevel].blindQuiz;
+            let optionsHtml = '';
+            quizData.options.forEach((opt, idx) => {
+                optionsHtml += `<button class="quiz-option" onclick="checkBlindAnswer(${idx})">${opt}</button>`;
+            });
+
+            modalInner.innerHTML = `
+                <h2 style="color:#c53030;">🕵️‍♂️ 終極溯源：盲測大考驗</h2>
+                <p style="text-align:left; font-size:15px; line-height:1.6; background:#fff5f5; padding:12px; border-radius:6px; border:1px solid #feb2b2;">
+                    ${quizData.q}
+                </p>
+                <div style="margin:15px 0;">${optionsHtml}</div>
+                <p id="blind-feedback" style="font-weight:bold; color:#e53e3e; min-height:24px;"></p>
+            `;
+            gameModal.style.display = 'flex';
+        }
+
+        function checkBlindAnswer(selectedIdx) {
+            const quizData = gameLevels[currentLevel].blindQuiz;
+            const feedback = document.getElementById('blind-feedback');
+            
+            if (selectedIdx === quizData.ans) {
+                feedback.style.color = '#38a169';
+                feedback.innerText = "⭕ 太強了！精準的化學預測！組裝線已成功解鎖！";
+                blindSolved = true;
+                setTimeout(() => {
+                    gameModal.style.display = 'none';
+                    renderProductCards(gameLevels[currentLevel]);
+                }, 1200);
+            } else {
+                feedback.style.color = '#e53e3e';
+                feedback.innerText = "❌ 數量算錯或分子比例不對喔，再盤點一次原子數！";
+            }
+        }
+
+        // 萬用拖曳機制 (100% 支援平板觸控與滑鼠)
         function onPointerDown(e) {
             if (e.target.classList.contains('placed')) return;
+            if (gameLevels[currentLevel].isBlind && !blindSolved) return; // 沒解鎖前不能拖
             
             draggedElement = e.target;
             draggedElement.setPointerCapture(e.pointerId);
@@ -465,12 +615,9 @@
             draggedElement.style.pointerEvents = 'auto';
             
             let targetSlot = null;
-            if (elementUnder) {
-                targetSlot = elementUnder.closest('.slot');
-            }
+            if (elementUnder) targetSlot = elementUnder.closest('.slot');
             
             if (targetSlot && !targetSlot.classList.contains('filled') && targetSlot.getAttribute('data-accept') === draggedElement.dataset.type) {
-                // 配對成功
                 targetSlot.innerHTML = '';
                 draggedElement.style.position = 'static';
                 draggedElement.style.zIndex = '10';
@@ -478,11 +625,10 @@
                 targetSlot.appendChild(draggedElement);
                 targetSlot.classList.add('filled');
                 targetSlot.classList.remove('hovered');
-                
                 draggedElement.removeEventListener('pointerdown', onPointerDown);
-                checkLevelWin();
+                
+                checkCardFilled(targetSlot.closest('.product-card'));
             } else {
-                // 配對失敗彈回
                 draggedElement.style.position = 'static';
                 draggedElement.style.zIndex = '10';
                 originalParent.appendChild(draggedElement);
@@ -495,51 +641,105 @@
             draggedElement = null;
         }
 
-        function checkLevelWin() {
-            const allSlots = document.querySelectorAll('.slot').length;
-            const filledSlots = document.querySelectorAll('.slot.filled').length;
+        function checkCardFilled(cardEl) {
+            const pIdx = parseInt(cardEl.id.replace('prod-card-', ''));
+            const totalSlots = cardEl.querySelectorAll('.slot').length;
+            const filledSlots = cardEl.querySelectorAll('.slot.filled').length;
             
-            if (allSlots === filledSlots) {
+            if (totalSlots === filledSlots && !gameLevels[currentLevel].products[pIdx].isGuessed) {
+                document.getElementById(`tag-${pIdx}`).innerText = "覆核中...";
+                setTimeout(() => { triggerQuiz(pIdx); }, 300);
+            }
+        }
+
+        // 常規組裝完成後的分子確認問題
+        function triggerQuiz(pIdx) {
+            activeQuizCardIdx = pIdx;
+            const prodData = gameLevels[currentLevel].products[pIdx];
+            
+            let optionsHtml = '';
+            prodData.quiz.options.forEach((opt, idx) => {
+                optionsHtml += `<button class="quiz-option" onclick="checkAnswer(${idx})">${opt}</button>`;
+            });
+
+            modalInner.innerHTML = `
+                <h2 style="color:#d69e2e;">🔍 證物成分鑑定報告</h2>
+                <p style="text-align:left; font-size:16px; font-weight:bold; background:#fffaf0; padding:10px; border-radius:6px; border:1px solid #fbd38d;">
+                    ${prodData.quiz.q}
+                </p>
+                <div style="margin:15px 0;">${optionsHtml}</div>
+                <p id="quiz-feedback" style="font-weight:bold; color:#e53e3e; min-height:24px;"></p>
+            `;
+            gameModal.style.display = 'flex';
+        }
+
+        function checkAnswer(selectedIdx) {
+            const prodData = gameLevels[currentLevel].products[activeQuizCardIdx];
+            const feedback = document.getElementById('quiz-feedback');
+            
+            if (selectedIdx === prodData.quiz.ans) {
+                feedback.style.color = '#38a169';
+                feedback.innerText = "⭕ 鑑定正確！物質分子成功解鎖！";
+                prodData.isGuessed = true;
+                
+                const card = document.getElementById(`prod-card-${activeQuizCardIdx}`);
+                card.classList.add('identified');
+                document.getElementById(`prod-name-${activeQuizCardIdx}`).innerHTML = `
+                    <span>${prodData.realName}</span> <span class="status-tag">鑑定成功</span>
+                `;
+
                 setTimeout(() => {
-                    showModal();
-                }, 400);
+                    gameModal.style.display = 'none';
+                    checkLevelClear();
+                }, 1000);
+            } else {
+                feedback.style.color = '#e53e3e';
+                feedback.innerText = "❌ 物質特性不符，再想想看學過的特性喔！";
             }
         }
 
-        // 彈出過關視窗邏輯
-        function showModal() {
-            const mTitle = document.getElementById('modal-title');
-            const mDesc = document.getElementById('modal-desc');
-            const mReport = document.getElementById('modal-report');
-            const mBtn = document.getElementById('modal-btn');
-
-            if (currentLevel < 2) {
-                mTitle.innerText = `🎉 第 ${currentLevel + 1} 關解謎成功！`;
-                mDesc.innerText = "成功利用微觀放大鏡重組分子，科學線索已成功鎖定！";
-                mReport.style.display = "none";
-                mBtn.innerText = "前進下一關挑戰";
-            } else {
-                // 最終通關（大魔王完結）
-                mTitle.innerText = "🏆 恭喜破案！榮獲特級科學偵探勳章";
-                mDesc.innerText = "你成功攻克了高難度的葡萄糖分子重組！請複製下方結案報告放入學習歷程：";
-                mReport.innerHTML = `<strong>📝 我的科學偵探結案報告：</strong><br><br>
-                「在本次科學偵探社的三關漸進式挑戰中，我學到了物質是由微小的原子組成的。無論是簡單的水、二氧化碳，還是生物課學過、結構複雜的<b>葡萄糖 (C₆H₁₂O₆)</b>，本質上都是由碳、氫、氧等原子群排列而成。<br>
-                透過動手拆解與重組，我發現<b>化學反應其實就是原子的『重新排列組合』</b>。在反應前後，原子的種類沒有變、數量也沒有增減，這完美呼應了質量守恆定律。這趟微觀破案旅程，讓我真正看見了課本知識在法醫科學上的奇妙應用！」`;
-                mReport.style.display = "block";
-                mBtn.innerText = "重新回味挑戰";
+        function checkLevelClear() {
+            const levelData = gameLevels[currentLevel];
+            const allCleared = levelData.products.every(p => p.isGuessed);
+            
+            if (allCleared) {
+                setTimeout(() => { showLevelClearModal(); }, 400);
             }
-            transitionModal.style.display = 'flex';
         }
 
-        function nextAction() {
-            transitionModal.style.display = 'none';
-            if (currentLevel < 2) {
-                currentLevel++;
-                loadLevel(currentLevel);
+        function showLevelClearModal() {
+            if (currentLevel < 3) {
+                modalInner.innerHTML = `
+                    <h2>🎉 第 ${currentLevel + 1} 關完全破案！</h2>
+                    <p>你完美重組並鑑定出本關的所有化學證物！</p>
+                    <button class="btn" onclick="nextLevel()">前進下一關挑戰</button>
+                `;
             } else {
-                currentLevel = 0;
-                loadLevel(currentLevel);
+                modalInner.innerHTML = `
+                    <h2 style="color:#2b6cb0;">🏆 榮獲最高榮譽：傳奇科學神探勳章</h2>
+                    <p>太不可思議了！你連最難的「逆向盲測」都能完美破解！請複製結案報告留作學習成果：</p>
+                    <div class="report-box">
+                        <strong>📝 我的科學偵探結案報告：</strong><br><br>
+                        「在本次科學偵探社的漸進式破案挑戰中，我成功通關了四個關卡。我發現無論是生活中的水、燃燒產生的二氧化碳，或是生物細胞內巨大的<b>葡萄糖 (C₆H₁₂O₆)</b>，全都是由微小的原子組成的。<br>
+                        在最終的『逆向盲測關』中，我學會了僅憑原子的總數（碳、氫、氧），就能逆向預測出它們在細胞呼吸作用中會重新排列組合成什麼產物。這證明了<b>化學反應的本質就是原子的『重新排列組合』，且反應前後原子的種類與數量絕對不會改變（質量守恆）</b>。這次的探究讓我發現微觀世界與巨觀現象的奇妙連結！」
+                    </div>
+                    <button class="btn" onclick="restartGame()">重新挑戰</button>
+                `;
             }
+            gameModal.style.display = 'flex';
+        }
+
+        function nextLevel() {
+            gameModal.style.display = 'none';
+            currentLevel++;
+            loadLevel(currentLevel);
+        }
+
+        function restartGame() {
+            gameModal.style.display = 'none';
+            currentLevel = 0;
+            blindSolved = false; // 重設第四關鎖定狀態
+            loadLevel(currentLevel);
         }
 
         window.onload = () => loadLevel(currentLevel);
